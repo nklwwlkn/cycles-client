@@ -3,14 +3,9 @@ import { HeadingXXLarge } from 'baseui/typography'
 import { useFormik } from 'formik'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PhoneInput from 'react-phone-number-input'
 
-import {
-  Container,
-  ErrorText,
-  InnerContainer,
-  InputWrapper,
-  StyledInput,
-} from '../commons'
+import { Container, ErrorText, InnerContainer, InputWrapper } from '../commons'
 import { renderRecaptcha } from '../../utils/renderRecaptcha'
 import { auth } from '../../config/firebaseConfig'
 import AuthService from '../../services/AuthService'
@@ -24,6 +19,7 @@ export type LoginFormPayload = {
 function Login() {
   const navigate = useNavigate()
 
+  const [phoneNumber, setPhoneNumber] = useState<any>()
   const [errors, setErrors] = useState<any[]>([])
   const [recaptchaToken, setRecaptchaToken] =
     useState<LoginFormPayload['recaptchaToken']>('')
@@ -41,12 +37,8 @@ function Login() {
     })
   }
 
-  const onSubmit = async (values: {
-    phoneNumber: LoginFormPayload['phoneNumber']
-  }) => {
+  const onSubmit = async () => {
     setErrors([])
-
-    const { phoneNumber } = values
 
     await AuthService.requestSms(
       { phoneNumber, recaptchaToken },
@@ -78,14 +70,12 @@ function Login() {
           <HeadingXXLarge>Welcome, Buddy!</HeadingXXLarge>
           {renderErrors}
           <InputWrapper>
-            <StyledInput
-              name="phoneNumber"
-              value={formik.values.phoneNumber}
-              onChange={formik.handleChange}
-              placeholder="+13333333333"
-              clearOnEscape
-              size="large"
-              type="tel"
+            <PhoneInput
+              international
+              countryCallingCodeEditable={false}
+              defaultCountry="RU"
+              value={phoneNumber}
+              onChange={setPhoneNumber}
             />
           </InputWrapper>
           <div id="container-recaptcha"></div>
