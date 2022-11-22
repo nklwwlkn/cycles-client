@@ -73,7 +73,7 @@ function Login() {
             <PhoneInput
               international
               countryCallingCodeEditable={false}
-              defaultCountry="RU"
+              defaultCountry="NO"
               value={phoneNumber}
               onChange={setPhoneNumber}
             />
