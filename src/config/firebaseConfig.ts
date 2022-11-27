@@ -13,6 +13,7 @@ if (
   throw new Error('Missing Firebase configuration')
 }
 
+
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.REACT_APP_API_KEY,
   authDomain: process.env.REACT_APP_AUTH_DOMAIN,

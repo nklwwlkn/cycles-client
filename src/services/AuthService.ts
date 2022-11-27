@@ -19,23 +19,33 @@ type VerifySmsPayload = {
   sessionInfo: string
 }
 
-const errorHandler = (err: any, cb: any) => {
+type onSuccessCb = (params?: any) => any
+type onFailureCb = (errors: any[]) => void
+
+const errorHandler = (err: any, cb: onFailureCb) => {
   // Handle errors here:
 
   if (err && err instanceof AxiosError) {
     return cb(err.response?.data.errors)
   }
 
+  // Right now just send generic error here:
   return cb(DEFAULT_AUTH_ERROR)
 }
 
 class AuthService {
-  async requestSms(payload: RequestSmsPayload, onSuccess: any, onFailure: any) {
+  async requestSms(payload: RequestSmsPayload, onSuccess: onSuccessCb, onFailure: onFailureCb) {
     return axios
       .post(API_URL + 'strategies/sms', payload)
       .then((response) => {
-        if (response.data.sessionInfo) {
-          return onSuccess(response.data.sessionInfo, payload.phoneNumber)
+        const { sessionInfo } = response.data
+        const { phoneNumber } = payload
+
+        if (sessionInfo) {
+          return onSuccess({
+            sessionInfo: sessionInfo,
+            phoneNumber: phoneNumber
+          })
         }
 
         return onFailure(response.data.errors)
@@ -45,7 +55,7 @@ class AuthService {
       })
   }
 
-  async verifySms(payload: VerifySmsPayload, onSucess: any, onFailure: any) {
+  async verifySms(payload: VerifySmsPayload, onSucess: onSuccessCb, onFailure: onFailureCb) {
     return axios
       .post(API_URL + 'strategies/sms/verify', payload)
       .then((response) => {
@@ -66,13 +76,15 @@ class AuthService {
     localStorage.removeItem('jwt')
   }
 
-  async getCurrentUser(onSuccess: any) {
+  async getCurrentUser(onSuccess: onSuccessCb) {
     return axios
       .get(API_URL + 'current-user', {
         headers: authHeader(),
       })
       .then((response) => {
-        onSuccess(response.data.currentUser)
+        const { currentUser } = response.data
+
+        onSuccess(currentUser)
       })
   }
 }

@@ -3,7 +3,7 @@ import { DisplayXSmall } from 'baseui/typography'
 import { useFormik } from 'formik'
 import { useEffect, useState } from 'react'
 
-import UserService from '../../services/UserService'
+import UserService, { UserPayload } from '../../services/UserService'
 
 import {
   Container,
@@ -13,35 +13,30 @@ import {
   StyledInput,
 } from '../commons'
 
-type propType = {
-  onLogout: () => void
-}
-
-type UserPayload = {
-  id: number
-  phoneNumber: string
-  name: string | null
-  email: string | null
-}
-
 const DEFAULT_USER_DATA = {
   name: 'No name yet',
   emain: 'No email yet',
 }
 
+type propType = {
+  onLogout: () => Promise<void>
+}
+
 function Home({ onLogout }: propType) {
-  const [errors, setErrors] = useState<any[]>([])
   const [user, setUser] = useState<Partial<UserPayload>>(DEFAULT_USER_DATA)
+  const [errors, setErrors] = useState<any[]>([])
 
   useEffect(() => {
     UserService.getMe(setUser, setErrors)
   }, [])
 
-  const onSubmit = async (values: {
-    email: UserPayload['email']
-    name: UserPayload['name']
-  }) => {
+  const onSubmit = async (values: Pick<UserPayload, 'name' | "email">) => {
     setErrors([])
+
+    const { name, email } = values
+
+    if (!name) return setErrors([{fieldName: "name", message: "Provide a name."}])
+    if (!email) return setErrors([{ fieldName: "email", message: "Provide an email."}])
 
     await UserService.updateMe(values, setUser, setErrors)
   }

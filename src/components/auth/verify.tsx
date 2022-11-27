@@ -13,29 +13,35 @@ import {
 } from '../commons'
 import AuthService from '../../services/AuthService'
 
+type VerifyFormPayload = {
+  code: string
+}
+
 type VerifyState = {
   sessionInfo: string
   phoneNumber: string
 }
 
 type propType = {
-  onSuccessVerify: () => void
+  onSuccessVerify: () => Promise<void>
 }
 
 function Verify({ onSuccessVerify }: propType) {
   const location = useLocation()
-  const { sessionInfo, phoneNumber } = location.state as VerifyState
-
   const [errors, setErrors] = useState<any[]>([])
 
-  const onSuccess = () => {
-    onSuccessVerify()
+  const { sessionInfo, phoneNumber } = location.state as VerifyState
+
+  const onSuccess = async () => {
+    await onSuccessVerify()
   }
 
-  const onSubmit = async (values: { code: string }) => {
+  const onSubmit = async (values: VerifyFormPayload) => {
     setErrors([])
 
     const { code } = values
+
+    if (!code) return setErrors([{fieldName: 'code', message: "Provide a code."}])
 
     await AuthService.verifySms(
       { code, phoneNumber, sessionInfo },
@@ -64,7 +70,7 @@ function Verify({ onSuccessVerify }: propType) {
     <Container>
       <InnerContainer>
         <form onSubmit={formik.handleSubmit}>
-          <HeadingXXLarge>One more step!</HeadingXXLarge>
+          <HeadingXXLarge>One more step.</HeadingXXLarge>
           {renderErrors}
           <InputWrapper>
             <StyledInput

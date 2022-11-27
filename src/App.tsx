@@ -26,14 +26,14 @@ function App() {
     AuthService.getCurrentUser(setCurrentUser)
   }, [])
 
-  const handleCurrentUserUpdate = () => {
-    AuthService.getCurrentUser(setCurrentUser)
+  const handleCurrentUserUpdate = async () => {
+    await AuthService.getCurrentUser(setCurrentUser)
     navigate('/')
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     AuthService.logout()
-    AuthService.getCurrentUser(setCurrentUser)
+    await AuthService.getCurrentUser(setCurrentUser)
     navigate('/')
   }
 

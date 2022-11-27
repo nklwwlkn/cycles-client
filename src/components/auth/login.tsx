@@ -3,7 +3,7 @@ import { HeadingXXLarge } from 'baseui/typography'
 import { useFormik } from 'formik'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PhoneInput from 'react-phone-number-input'
+import  PhoneInput from 'react-phone-number-input'
 
 import { Container, ErrorText, InnerContainer, InputWrapper } from '../commons'
 import { renderRecaptcha } from '../../utils/renderRecaptcha'
@@ -11,7 +11,7 @@ import { auth } from '../../config/firebaseConfig'
 import AuthService from '../../services/AuthService'
 
 export type LoginFormPayload = {
-  phoneNumber: string
+  phoneNumber: string | undefined
   recaptchaToken: string
   sessionInfo: string
 }
@@ -19,19 +19,18 @@ export type LoginFormPayload = {
 function Login() {
   const navigate = useNavigate()
 
-  const [phoneNumber, setPhoneNumber] = useState<any>()
-  const [errors, setErrors] = useState<any[]>([])
+  const [phoneNumber, setPhoneNumber] = useState<LoginFormPayload['phoneNumber']>('')
   const [recaptchaToken, setRecaptchaToken] =
     useState<LoginFormPayload['recaptchaToken']>('')
+  const [errors, setErrors] = useState<any[]>([])
 
   useEffect(() => {
     renderRecaptcha('container-recaptcha', auth, setRecaptchaToken)
   }, [])
 
-  const onSuccess = (
-    sessionInfo: LoginFormPayload['sessionInfo'],
-    phoneNumber: LoginFormPayload['phoneNumber'],
-  ) => {
+  const onSuccess = (payload: Pick<LoginFormPayload, 'sessionInfo' | 'phoneNumber'>) => {
+    const { sessionInfo, phoneNumber } = payload
+
     navigate('/verify', {
       state: { sessionInfo: sessionInfo, phoneNumber: phoneNumber },
     })
@@ -39,6 +38,9 @@ function Login() {
 
   const onSubmit = async () => {
     setErrors([])
+
+    if (!phoneNumber) return setErrors([{fieldName: "phoneNumber", message: "Provide phone number."}])
+    if (!recaptchaToken) return setErrors([{ fieldName: "recaptchaToken", message: "Try again recaptcha." }])
 
     await AuthService.requestSms(
       { phoneNumber, recaptchaToken },
@@ -48,9 +50,7 @@ function Login() {
   }
 
   const formik = useFormik({
-    initialValues: {
-      phoneNumber: '',
-    },
+    initialValues: {},
     onSubmit,
   })
 

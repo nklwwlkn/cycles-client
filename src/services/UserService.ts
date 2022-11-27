@@ -4,10 +4,21 @@ import { authHeader } from '../utils/authHeader'
 const API_URL = `${process.env.REACT_APP_COREAPI_URL}/users/`
 
 const DEFAULT_AUTH_ERROR = [
-  { fieldName: 'User', message: 'Unexpected User Error.' },
+  { fieldName: 'user', message: 'Unexpected User Error.' },
 ]
 
-const errorHandler = (err: any, cb: any) => {
+export type UserPayload = {
+  id: number
+  phoneNumber: string
+  name: string | null
+  email: string | null
+}
+type UpdateUserPayload = Pick<UserPayload, "email" | "name">
+
+type onSuccessCb = (params?: any) => any
+type onFailureCb = (errors: any[]) => void
+
+const errorHandler = (err: any, cb: onFailureCb) => {
   // Handle errors here:
 
   if (err && err instanceof AxiosError) {
@@ -18,7 +29,7 @@ const errorHandler = (err: any, cb: any) => {
 }
 
 class UserService {
-  async getMe(onSuccess: any, onFailure: any) {
+  async getMe(onSuccess: onSuccessCb, onFailure: onFailureCb) {
     return axios
       .get(API_URL + 'me', {
         headers: authHeader(),
@@ -31,7 +42,7 @@ class UserService {
       })
   }
 
-  async updateMe(payload: any, onSuccess: any, onFailure: any) {
+  async updateMe(payload: UpdateUserPayload, onSuccess: onSuccessCb, onFailure: onFailureCb) {
     return axios
       .patch(API_URL + 'me', payload, {
         headers: authHeader(),
